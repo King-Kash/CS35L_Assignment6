@@ -39,15 +39,30 @@ randall-assignment.$(TAREXT): $(assignment-files)
 	$(TAR) $(TARFLAGS) -cf $@ $(assignment-files)
 
 submission-tarball: randall-submission.$(TAREXT)
-submission-files = $(assignment-files) \
-  notes.txt # More files should be listed here, as needed.
+submission-files = $(assignment-files) \  # <------LOOK HERE---LOOK HERE---
+  notes.txt # More files should be listed here, as needed. <------LOOK HERE---LOOK HERE---
 randall-submission.$(TAREXT): $(submission-files)
 	$(TAR) $(TARFLAGS) -cf $@ $(submission-files)
 
 repository-tarball:
 	$(TAR) -czf randall-git.tgz .git
 
-.PHONY: default clean assignment submission-tarball repository-tarball
+.PHONY: default clean assignment submission-tarball repository-tarball check format valgrind sanitizers
 
 clean:
 	rm -f *.o *.$(TAREXT) randall
+
+# Unit test that checks NBYTES.
+check: randall
+	@echo "Running test cases..."
+	@echo "=========== TEST 1 ==========="
+@./randall 20 | wc -c | (grep -q "^20$$" && echo "PASSED") || (echo "FAILED" && false)
+# Automatically formats all of your C code.
+format:
+	clang-format -i *.c *.h
+# Helps find memory leaks. For an explanation on each flag, see this link.
+valgrind: randall
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./randall 100
+
+
+
