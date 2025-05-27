@@ -23,6 +23,9 @@ CC = gcc
 CFLAGS = $(OPTIMIZE) -g3 -Wall -Wextra -fanalyzer \
   -march=native -mtune=native -mrdrnd
 
+SRCS   = randall.c rand64-hw.c rand64-sw.c output.c
+OBJS   = $(SRCS:.c=.o)
+
 # The archiver command, its options and filename extension.
 TAR = tar
 TARFLAGS = --gzip --transform 's,^,randall/,'
@@ -30,8 +33,11 @@ TAREXT = tgz
 
 default: randall
 
-randall: randall.c
-	$(CC) $(CFLAGS) $@.c -o $@
+randall: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o randall
+
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 assignment: randall-assignment.$(TAREXT)
 assignment-files = COPYING Makefile randall.c
@@ -39,8 +45,8 @@ randall-assignment.$(TAREXT): $(assignment-files)
 	$(TAR) $(TARFLAGS) -cf $@ $(assignment-files)
 
 submission-tarball: randall-submission.$(TAREXT)
-submission-files = $(assignment-files) \  # <------LOOK HERE---LOOK HERE---
-  notes.txt # More files should be listed here, as needed. <------LOOK HERE---LOOK HERE---
+submission-files = $(assignment-files) \
+  notes.txt
 randall-submission.$(TAREXT): $(submission-files)
 	$(TAR) $(TARFLAGS) -cf $@ $(submission-files)
 
@@ -56,7 +62,7 @@ clean:
 check: randall
 	@echo "Running test cases..."
 	@echo "=========== TEST 1 ==========="
-@./randall 20 | wc -c | (grep -q "^20$$" && echo "PASSED") || (echo "FAILED" && false)
+	@./randall 20 | wc -c | (grep -q "^20$$" && echo "PASSED") || (echo "FAILED" && false)
 # Automatically formats all of your C code.
 format:
 	clang-format -i *.c *.h
