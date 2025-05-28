@@ -23,7 +23,7 @@ CC = gcc
 CFLAGS = $(OPTIMIZE) -g3 -Wall -Wextra -fanalyzer \
   -march=native -mtune=native -mrdrnd
 
-SRCS   = randall.c rand64-hw.c rand64-sw.c output.c
+SRCS   = randall.c rand64-hw.c rand64-sw.c output.c options.c
 OBJS   = $(SRCS:.c=.o)
 
 # The archiver command, its options and filename extension.
