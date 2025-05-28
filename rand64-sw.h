@@ -8,6 +8,7 @@
 void software_rand64_init(void);
 unsigned long long software_rand64(void);
 void software_rand64_fini(void);
+void software_rand64_fetch(char *filepath);
 
 void software_rand48_init(void);
 unsigned long long software_rand48(void);

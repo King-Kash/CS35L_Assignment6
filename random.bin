@@ -1,5 +1,5 @@
 optind=5 and argc=6 
-inputOpt=mrand48_r, outputOpt=stdio, optind=5, nbytes=20
-inputOption was mrand48_r
+inputOpt=/dev/random, outputOpt=stdio, optind=5, nbytes=20
+inputOption was custom file
 used softare (remove line:69 randall.c)
-»­C¾	èêìÔ˜ÿÿÿÿ¿gÉ
+ª°#&ğ]™o*¶3­òç’…M

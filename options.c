@@ -77,7 +77,7 @@ int process_options(int argc, char **argv, long long *nbytes, long long *customs
     else if (inputOpt[0] == '/') 
     {
         printf("inputOption was custom file\n");
-        
+        software_rand64_fetch(inputOpt);
         *inputOptions = 3;
     }
     else 
