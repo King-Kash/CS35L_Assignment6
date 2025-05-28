@@ -36,8 +36,6 @@ int process_options(int argc, char **argv, long long *nbytes, long long *customs
         fprintf(stderr, "missing NBYTES, usage: %s -i [INPUT_OPTION] -o [OUTPUT_OPTION] NBYTES\n", argv[0]);
     }
   
-    printf("optind=%d and argc=%d \n", optind, argc);
-
     //check for the correct number of arguments. optind should be argc-1 at this point and should be pointing to NUMBYTES.
     if (optind < argc)
     {
@@ -59,44 +57,35 @@ int process_options(int argc, char **argv, long long *nbytes, long long *customs
         return 1;
     }
 
-  
-    printf("inputOpt=%s, outputOpt=%s, optind=%d, nbytes=%lld\n",
-           inputOpt, outputOpt, optind, *nbytes);
-
     //Set input options
     if (strcmp(inputOpt, "rdrand") == 0)
     {
-        printf("inputOption was rdrand\n");
         *inputOptions = 1;
     }
     else if (strcmp(inputOpt, "mrand48_r") == 0)
     {
-        printf("inputOption was mrand48_r\n");
         *inputOptions = 2;
     }
     else if (inputOpt[0] == '/') 
     {
-        printf("inputOption was custom file\n");
         software_rand64_fetch(inputOpt);
         *inputOptions = 3;
     }
     else 
     {
-        fprintf(stderr, "Invalid input option.");
+        fprintf(stderr, "Invalid input option. Default to hardware.");
+        *inputOptions = 1;
         return 1;
     }
 
 
     //Set output options
-    // if (strcmp(outputOpt, "stdio") == 0)
-    // {
-    //     printf("outputOption was stdio\n");
-    //     *outputOptions = 1;
-    // }
-    // else if(false)
-    // {
-    //     printf("need to impliment still");
-    // }
+    if (strcmp(outputOpt, "stdio") == 0)
+    {
+        printf("outputOption was stdio\n");
+        *outputOptions = 1;
+    }
+
 
 
   
