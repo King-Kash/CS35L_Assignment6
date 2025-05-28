@@ -5,7 +5,7 @@
 
 /* Input stream containing random bytes.  */
 static FILE *urandstream;
-static char *path = "booty";
+static char *path = "/dev/random";
 
 /* Initialize the software rand64 implementation.  */
 void
@@ -40,3 +40,27 @@ software_rand64_fetch(char *filepath)
 }
 
 //48 bit stream or something or other
+
+// This has to be declared at file scope. It can not be declared within a function
+static struct drand48_data randBuffer;
+
+void
+software_rand48_init(void)
+{
+    srand48_r(time(NULL), &randBuffer); // seed the generator with some entropy source
+}
+
+unsigned long long
+software_rand48(void)
+{
+    unsigned long long x;
+    long int hi, lo;
+    mrand48_r(&randBuffer, &hi); //produce 32 bits each
+    mrand48_r(&randBuffer, &lo);
+    x = ((unsigned long long)hi << 32) | (unsigned long long)lo; //join hi and lo by shifting hi casting both as unsigned and combining into one (long long) casting.
+    return x;
+}
+
+void software_rand48_fini(void)
+{
+}

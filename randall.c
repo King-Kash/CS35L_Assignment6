@@ -77,9 +77,9 @@ main (int argc, char **argv)
   else if (inputOption == 2)
   {
     printf("used softare (remove line:69 randall.c)\n");
-    initialize = software_rand64_init;
-    rand64 = software_rand64;
-    finalize = software_rand64_fini;
+    initialize = software_rand48_init;
+    rand64 = software_rand48;
+    finalize = software_rand48_fini;
   }
   else if (inputOption == 3)
   {
