@@ -1,0 +1,56 @@
+Initial Execution of randall after compiling it:
+
+Command: ./randall
+./randall: usage: ./randall NBYTES
+
+Command: time ./randall
+./randall: usage: ./randall NBYTES
+
+real    0m0.002s
+user    0m0.000s
+sys     0m0.001s
+
+1. Split randall.c into individual files
+- rand64-hw.c/h
+- rand64-sw.c/h
+- output.c/h
+- options.c/h
+
+2. Correct the options.c File to Take in More Inputs**  
+- Add support for lrand48_r and validate inputs.  
+- Update struct options to handle new inputs.  
+- Ensure concise error messages for invalid inputs.  
+
+3. Add rand48 to the Software Generation**  
+- Implement mrand48_init to seed with time(NULL).  
+- Use struct drand48_data for RNG state.  
+- Combine 32-bit lrand48_r outputs for 64-bit numbers.  
+
+4. Change randall to Work with Modularization  
+- Assign function pointers dynamically for inputs.  
+- Support stdio and block-based output in main.  
+- Handle partial writes and exact byte counts.  
+- Ensure all modules integrate cleanly.  
+
+Development Notes
+
+1. Code Modularization
+The program is modularized into distinct files based on functionality to maintain clarity and facilitate easier debugging. 
+For instance, hardware-based random number generation (rdrand) is handled in rand64-hw.c, while software-based random 
+number generation (lrand48_r and file input) is implemented in rand64-sw.c. The output.c file manages how data is 
+written to stdout or in blocks using the write system call, and options.c handles parsing and validating command-line 
+arguments. This modularization allows us to isolate concerns and make future extensions or fixes more straightforward.
+
+2. Handling Various Inputs
+The program supports multiple input sources through the -i option: rdrand for hardware-based random generation (default), 
+lrand48_r for software-based random generation, and /F for reading random data from a file. It validates inputs and 
+ensures unsupported configurations like unavailable rdrand result in clear error messages. The -o option handles output 
+configuration, either using stdio for simple output or a block size (N) for chunked writes. Edge cases, like partial 
+writes and exact byte handling, are carefully managed.
+
+3. Makefile and Tests
+The Makefile was updated to include a check target that automates tests for verifying the program’s functionality. 
+This target runs predefined cases for different inputs (-i) and outputs (-o), ensuring the program adheres to 
+requirements. Automating tests helps maintain consistent behavior, simplifies debugging, and streamlines validation for 
+future changes. Temporary files are used for output validation, ensuring no manual steps are required. These updates 
+make the testing process robust and developer-friendly.

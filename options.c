@@ -8,7 +8,7 @@
 #include "options.h"
 #include "rand64-sw.h"
 
-int process_options(int argc, char **argv, long long *nbytes, long long *customsize, int *inputOptions, int *outputOptions)
+int process_options(int argc, char **argv, long long *nbytes, long *customsize, int *inputOptions, int *outputOptions)
 {
     //exit with error code 1 anytime an error is experienced
     char *inputOpt = "rdrand";
@@ -34,6 +34,7 @@ int process_options(int argc, char **argv, long long *nbytes, long long *customs
     if (optind >= argc)
     {
         fprintf(stderr, "missing NBYTES, usage: %s -i [INPUT_OPTION] -o [OUTPUT_OPTION] NBYTES\n", argv[0]);
+        return 1;
     }
   
     //check for the correct number of arguments. optind should be argc-1 at this point and should be pointing to NUMBYTES.
@@ -82,10 +83,46 @@ int process_options(int argc, char **argv, long long *nbytes, long long *customs
     //Set output options
     if (strcmp(outputOpt, "stdio") == 0)
     {
-        printf("outputOption was stdio\n");
         *outputOptions = 1;
+        valid = true;
     }
+    else
+    {
+        char *endptr;
+        errno = 0;
+        // *customsize = strtoll(outputOpt, &endptr, 10);
+        // if (errno)
+        //     perror(outputOpt);
+        // else
+        //     valid = *endptr == '\0' && 0 <= *customsize;
+        long long tmp = strtoll(outputOpt, &endptr, 10);
+        valid = (errno == 0 && *endptr == '\0' && tmp > 0);
+        if (valid)
+            *customsize = tmp;
 
+        if (!valid)
+        {
+            printf("check the following: N is a positive integer.\n");
+            fprintf(stderr,
+                     "Usage: %s [-i INPUT] [-o OUTPUT] NBYTES\n OUTPUT must be “stdio” or a positive integer.\n",
+                     argv[0]);
+            return 1;
+        }
+        *outputOptions = 2;
+
+
+        // char *endptr;
+        // long long val;
+        // errno = 0;
+        // val = strtoll(outputOpt, &endptr, 10);
+        // if (errno || *endptr != '\0' || val <= 0)
+        // {
+        //     fprintf(stderr, "Invalid OUTPUT chunk size: %s\n", outputOpt);
+        //     return 1;
+        // }
+        // *outputOptions = 2;
+        // *customsize = val;
+    }
 
 
   

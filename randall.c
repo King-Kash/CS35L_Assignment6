@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "rand64-hw.h"
 #include "rand64-sw.h"
 #include "output.h"
@@ -43,14 +44,13 @@ main (int argc, char **argv)
   long long nbytes;
   int inputOption = 0;
   int outputOption = 0;
-  long long customsize;
+  long customsize;
 
   process_options(argc, argv, &nbytes, &customsize, &inputOption, &outputOption);
 
   /* If there's no work to do, don't worry about which library to use.  */
   if (nbytes == 0)
     return 0;
-
 
   /* Now that we know we have work to do, arrange to use the
      appropriate library.  */
@@ -99,7 +99,7 @@ main (int argc, char **argv)
     do
     {
       unsigned long long x = rand64();
-      int outbytes = nbytes < wordsize ? nbytes : wordsize;
+      int outbytes = nbytes < wordsize ? nbytes : wordsize; //this is similar logic to chunk
       if (!writebytes(x, outbytes))
       {
         output_errno = errno;
@@ -108,9 +108,54 @@ main (int argc, char **argv)
       nbytes -= outbytes;
     } while (0 < nbytes);
   }
+  else if (outputOption == 2)
+  {
+    //printf("N: %ld\n", customsize);
+    char *buf = malloc(customsize);
+    if (!buf)
+    {
+      perror("malloc");
+      return 1;
+    }
+    long long remaining = nbytes;
+    while (remaining > 0)
+    {
+      long long chunk = (remaining < customsize ? remaining : customsize);
+      //fill the buffer
+      long long pos = 0;
+      while (pos < chunk)
+      {
+        unsigned long long x = rand64();
+        for (int i = 7; i >= 0 && pos < chunk; i--)
+        {
+          buf[pos++] = (x >> (i * CHAR_BIT)) & 0xFF;
+        }
+      }
+      //write the buffer
+      char* ptr = buf;
+      long long towrite = chunk;
+      while (towrite > 0)
+      {
+        ssize_t k = write(1, ptr, towrite);
+        if (k < 0)
+        {
+          output_errno = errno;
+          break;
+        }
+        ptr += k;
+        towrite -= k;
+        remaining -=k;
+      }
+      if (output_errno)
+      {
+        break;
+      }
+    }
+    free(buf);
+  }
 
-  if (fclose (stdout) != 0)
-    output_errno = errno;
+  // if (fclose (stdout) != 0)
+  //   output_errno = errno;
 
   if (output_errno)
     {
@@ -122,25 +167,50 @@ main (int argc, char **argv)
   return !!output_errno;
 }
 
+/*
+2 layers
 
+declare the buffer check that it was intilized with customsize
+remaining = nbytes
+1. top layer - handles nbytes
+until all nbytes have been written out so remaining > 0
+  chunk = min of customsize or remaining to see how many bytes are needed for this iteration
+  pass how many bytes need to be printed into the inner loop or a custom function (my own func)
+  the inner loop will have handled initilizing the buffer so now we can print it
+  we need to use the write function for this (be careful as write does not always output the expected number of bytes)
+    ptr = buff (point to start of the buffer)
+    towrite = chunk (number of bytes to write)
+    while (towrite > 0)
+    {
+      k = write(1, ptr, towrite) //k = how many bytes were actually printed. may not be as many as we would like on just the first pass
+      if ( k < 0)
+      {
+        error
+      }
+      ptr += k;
+      towrtie -= k
+      remaining -= k //this ensure we accurately capture how many bytes we actually printed out
+    }
 
+2. inside layer - handles chunks
 
+in the old version we handled printing 8 bytes at a time but now we need to handle printing N bytes at a time.
+pointer to track position inside of buffer
+We need a loop in here to run while pos < chunk size
+  generate 64 bits (8 bytes)
+  loop through 64 bits and append one byte at a time to chunk
+    conditions on loop:
+      1. i < 8 only 64 bits = 8 bytes generated so make sure we dont try to append more than 8 bytes at a time
+      2. pos < chunk in case within this appeneding loop we hit the end of the chunks
+    iteration on loop:
+      1. i++
+  chunck size - number of bytes appended
+Now the chunk is full so we can print the whole chunk
 
+the number of bytes we need told to
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Once all writing is done free the memory allocated to the buffer
+*/
 
 /* _____________________________ Hardware implementation. _____________________________ */
 

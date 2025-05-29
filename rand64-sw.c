@@ -55,8 +55,8 @@ software_rand48(void)
 {
     unsigned long long x;
     long int hi, lo;
-    mrand48_r(&randBuffer, &hi); //produce 32 bits each
-    mrand48_r(&randBuffer, &lo);
+    lrand48_r(&randBuffer, &hi); //produce 32 bits each
+    lrand48_r(&randBuffer, &lo);
     x = ((unsigned long long)hi << 32) | (unsigned long long)lo; //join hi and lo by shifting hi casting both as unsigned and combining into one (long long) casting.
     return x;
 }
