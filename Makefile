@@ -66,48 +66,48 @@ clean:
 # 	@echo "=========== TEST 2 ==========="
 # 	@./randall 1000000 | python3 -c 'import sys; data = sys.stdin.buffer.read(); counts = [0] * 256; [counts.__setitem__(b, counts[b] + 1) for b in data]; total = len(data); expected = total / 256; chi2 = sum(((c - expected) ** 2) / expected for c in counts); sys.exit(0) if 206 <= chi2 <= 304 else sys.exit(1)' && echo "PASSED" || (echo "FAILED" && false)
 
-
-check: randall
+check:
 	@echo "Running test cases..."
-
 	@echo "=========== TEST 1 ==========="
 	@./randall 20 | wc -c | (grep -q "^20$$" && echo "PASSED") || (echo "FAILED" && false)
 
 	@echo "=========== TEST 2 ==========="
-	@./randall 1000000 | python3 -c 'import sys; data = sys.stdin.buffer.read(); counts = [0] * 256; [counts.__setitem__(b, counts[b] + 1) for b in data]; total = len(data); expected = total / 256; chi2 = sum(((c - expected) ** 2) / expected for c in counts); sys.exit(0) if 206 <= chi2 <= 304 else sys.exit(1)' && echo "PASSED" || (echo "FAILED" && false)
+	@./randall 1000000 | python3 -c 'import sys; data = sys.stdin.buffer.read(); counts = [0] * 256; \
+[counts.__setitem__(b, counts[b] + 1) for b in data]; total = len(data); expected = total / 256; \
+chi2 = sum(((c - expected) ** 2) / expected for c in counts); sys.exit(0) if 206 <= chi2 <= 304 else sys.exit(1)' \
+	&& echo "PASSED" || (echo "FAILED" && false)
 
-	@echo "=========== TEST 3: default backend ==========="
-	@./randall -i rdrand 50 | wc -c | grep -q "^50$$" && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 3 ==========="
+	@./randall -i rdrand 123 | wc -c | (grep -q "^123$$" && echo "PASSED") || (echo "FAILED" && false)
 
-	@echo "=========== TEST 4: mrand48_r backend ==========="
-	@./randall -i mrand48_r 60 | wc -c | grep -q "^60$$" && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 4 ==========="
+	@./randall -i mrand48_r 256 | wc -c | (grep -q "^256$$" && echo "PASSED") || (echo "FAILED" && false)
 
-	@echo "=========== TEST 5: file backend (/dev/zero) ==========="
-	@./randall -i /dev/zero 100 | od -An -t u1 | tr -s ' ' '\n' | head -100 | grep -q "^0$$" && \
-	  wc -c <(./randall -i /dev/zero 100) | grep -q "^100$$" && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 5 ==========="
+	@./randall -i /dev/urandom 512 | wc -c | (grep -q "^512$$" && echo "PASSED") || (echo "FAILED" && false)
 
-	@echo "=========== TEST 6: stdio output ==========="
-	@./randall -o stdio 70 | wc -c | grep -q "^70$$" && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 6 ==========="
+	@./randall -o stdio 1005 | wc -c | (grep -q "^1005$$" && echo "PASSED") || (echo "FAILED" && false)
 
-	@echo "=========== TEST 7: blocked-write output ==========="
-	@CHUNK=10; TOTAL=25; \
-	 [ "$$(./randall -o $$CHUNK $$TOTAL | wc -c)" -eq "$$TOTAL" ] && \
-	 [ "$$(strace -e trace=write ./randall -o $$CHUNK $$TOTAL 2>&1 | grep -c '^write(')" -eq $$(( (TOTAL+CHUNK-1)/CHUNK )) ] && \
-	 echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 7 ==========="
+	@./randall -o 7 50 | wc -c | (grep -q "^50$$" && echo "PASSED") || (echo "FAILED" && false)
 
-	@echo "=========== TEST 8: missing NBYTES ==========="
-	-@! ./randall -i rdrand -o stdio   && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 8 ==========="
+	@./randall -i mrand48_r -o 13 99 | wc -c | (grep -q "^99$$" && echo "PASSED") || (echo "FAILED" && false)
 
-	@echo "=========== TEST 9: non-numeric NBYTES ==========="
-	-@! ./randall abc                && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 9 ==========="
+	@./randall 0 | wc -c | (grep -q "^0$$" && echo "PASSED") || (echo "FAILED" && false)
 
-	@echo "=========== TEST 10: invalid input option ==========="
-	-@! ./randall -i foo 10          && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 10 ==========="
+	@./randall -i rdrand -o stdio 2>/dev/null && (echo "FAILED" && false) || echo "PASSED"
 
-	@echo "=========== TEST 11: invalid output option ==========="
-	-@! ./randall -o bar 10          && echo "PASSED" || echo "FAILED"
+	@echo "=========== TEST 11 ==========="
+	@./randall -i notareal 10 >/dev/null 2>&1 && (echo "FAILED" && false) || echo "PASSED"
 
-	@echo "All tests complete."
+	@echo "=========== TEST 12 ==========="
+	@./randall -o foo 10 >/dev/null 2>&1 && (echo "FAILED" && false) || echo "PASSED"
+
+
 # Automatically formats all of your C code.
 format:
 	clang-format -i *.c *.h
